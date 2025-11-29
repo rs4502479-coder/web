@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Login | BDG USDT Mining</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="/assets/css/account.css">
+  <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+  <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css'>
+  <style>
+    body { background:#0c0c0c; color:white; font-family:Arial; }
+    .login-container {
+      width:90%; max-width:420px; margin:120px auto; background:#141414;
+      padding:30px; border-radius:10px; text-align:center; box-shadow:0 0 12px #000;
+    }
+    .input-box {
+      width:90%; margin:15px auto; display:flex; align-items:center;
+      padding:5px 10px; background:#1e1e1e; border-radius:8px;
+    }
+    .input-box input {
+      width:100%; padding:14px; background:#222; border:none; color:white; border-radius:8px;
+    }
+    #togglePass { margin-left:8px; cursor:pointer; color:#aaa; }
+    .btn-login {
+      width:40%; padding:12px; font-size:18px; font-weight:bold;
+      background:#ff9800; border:none; color:black; border-radius:8px; cursor:pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="login-container">
+    <h2>Admin Login</h2>
+
+    <div class="input-box">
+      <input type="email" id="adminEmail" placeholder="Admin Email" required>
+    </div>
+
+    <div class="input-box">
+  <input type="password" id="adminPassword" placeholder="Password" required>
+  <span id="togglePass" style="cursor:pointer; margin-left:10px;">
+      <i class="fi fi-sr-shield-keyhole" id="passIcon"></i>
+  </span>
+</div>
+
+
+    <button class="btn-login" onclick="adminLogin()">Login</button>
+
+    <div class="security-warning" style="opacity:0.7; font-size:17px; margin-top:12px;">
+      <span class="iconify" data-icon="mdi:shield-lock-outline"></span>
+      Authorized personnel only
+    </div>
+  </div>
+
+<script>
+// 🚨 Already logged in → redirect
+if (localStorage.getItem("adminToken")) {
+  window.location.href = "admin.html";
+}
+
+async function adminLogin() {
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value.trim();
+
+  if (!email || !password) return alert("Please fill all fields!");
+
+  try {
+    const res = await fetch("http://localhost:3000/api/admin/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.message);
+      return;
+    }
+
+    // store admin token
+    localStorage.setItem("adminToken", data.token);
+
+    // redirect
+    window.location.href = "admin.html";
+
+  } catch (err) {
+    console.error(err);
+    alert("Server error!");
+  }
+}
+
+
+const pass = document.getElementById("adminPassword");
+const toggle = document.getElementById("togglePass");
+const icon = document.getElementById("passIcon");
+
+toggle.addEventListener("click", () => {
+  if (pass.type === "password") {
+    pass.type = "text";
+    icon.className = "fi fi-sr-shield-keyhole";   // show eye
+  }
+  else{
+    pass.type = "password";
+    icon.className = "fi fi-sr-key";    // show lock
+  }
+});
+</script>
+
+</body>
+</html>
