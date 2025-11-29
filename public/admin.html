@@ -124,10 +124,11 @@
 
 <script>
 // Base API URL
-const API = "https://yourdomain.com/api/admin";   // change to your backend URL
-const token = localStorage.getItem("token");
-
-if (!token) alert("Admin token missing! Login first.");
+const API = "http://localhost:3000//api/admin";   // change to your backend URL
+const adminToken = localStorage.getItem("adminToken");
+if (!adminToken) {
+    window.location.href = "admin_login.html";
+}
 
 
 /* =======================================================
@@ -267,3 +268,4 @@ loadWithdraw();
 
 </body>
 </html>
+
