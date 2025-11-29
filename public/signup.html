@@ -30,9 +30,15 @@
           <input type="email" id="s_email" placeholder="Email" required />
         </div>
 
-        <div class="form-group">
-          <input type="text" id="s_password" placeholder="Password" required />
-        </div>
+        <div class="form-group" style="position: relative;">
+  <input type="password" id="s_password" placeholder="Password" required />
+
+  <span id="toggleSPass"
+        style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">
+    👁️
+  </span>
+</div>
+
 
         <div class="form-group">
           <input type="text" id="s_invite" placeholder="Invite Code" />
@@ -66,6 +72,20 @@
 </script>
 
 
+<script>
+  const spass = document.getElementById("s_password");
+  const toggleS = document.getElementById("toggleSPass");
+
+  toggleS.addEventListener("click", () => {
+    if (spass.type === "password") {
+      spass.type = "text";
+      toggleS.textContent = "🙈"; // hide icon
+    } else {
+      spass.type = "password";
+      toggleS.textContent = "👁️"; // show icon
+    }
+  });
+</script>
 
   <!-- Correct JS path -->
   <script src="/assets/js/user.js"></script>
@@ -73,4 +93,5 @@
   
 </body>
 </html>
+
 
