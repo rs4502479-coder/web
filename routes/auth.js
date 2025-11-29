@@ -25,7 +25,7 @@ router.post("/signup", async (req, res) => {
     const [ex] = await db.query("SELECT id FROM users WHERE email = ?", [
       email,
     ]);
-    if (ex.length) return res.status(400).json({ "Email exists" });
+    if (ex.length) return res.status(400).json({ error :"Email exists" });
 
     const hash = await bcrypt.hash(password, 10);
 
@@ -144,4 +144,5 @@ router.post("/login", async (req, res) => {
 });
 
 module.exports = router;
+
 
