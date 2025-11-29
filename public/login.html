@@ -24,9 +24,14 @@
           <input type="email" id="l_email" placeholder="Email" required />
         </div>
 
-        <div class="form-group">
-          <input type="password" id="l_password" placeholder="Password" required />
-        </div>
+        <div class="form-group" style="position: relative;">
+  <input type="password" id="l_password" placeholder="Password" required />
+
+  <span id="togglePass" 
+        style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">
+    👁️
+  </span>
+</div>
         
         <button type="submit" id="btnLogin" class="btn btn-primary">Login</button>
         <div id="l_msg" class="small"></div>
@@ -40,9 +45,25 @@
   </div>
   <script src="/assets/js/user.js"></script>
   <script src="/assets/app.js"></script>
+  <script>
+  const pass = document.getElementById("l_password");
+  const toggle = document.getElementById("togglePass");
+
+  toggle.addEventListener("click", () => {
+    if (pass.type === "password") {
+      pass.type = "text";
+      toggle.textContent = "🙈"; // hide icon
+    } else {
+      pass.type = "password";
+      toggle.textContent = "👁️"; // show icon
+    }
+  });
+</script>
+
   
 </body>
 
 </html>
+
 
 
