@@ -1,36 +1,26 @@
 const jwt = require("jsonwebtoken");
-const db = require("../config/db");
+require("dotenv").config();
 
-module.exports = async function adminAuth(req, res, next) {
+const JWT_SECRET = process.env.JWT_SECRET || "devsecret";
+
+module.exports = async function (req, res, next) {
+  const header = req.headers.authorization || req.headers.Authorization;
+  if (!header) return res.status(401).json({ success: false, message: "No token" });
+
+  // token might be "Bearer <token>" or just the token
+  const token = header.includes(" ") ? header.split(" ")[1] : header;
+
   try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token)
-      return res.status(401).json({ success: false, message: "No token" });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // check user is admin
-    db.query(
-      `SELECT * FROM users WHERE id = ?`,
-      [decoded.id],
-      (err, result) => {
-        if (err || result.length === 0) {
-          return res
-            .status(401)
-            .json({ success: false, message: "Invalid Admin" });
-        }
-
-        if (result[0].is_admin !== 1) {
-          return res
-            .status(403)
-            .json({ success: false, message: "Access Denied" });
-        }
-
-        req.admin = result[0];
-        next();
-      }
-    );
+    const decoded = jwt.verify(token, JWT_SECRET);
+    // simple check that token includes isAdmin flag OR check users table later
+    if (!decoded || !decoded.isAdmin) {
+      return res.status(403).json({ success: false, message: "Not an admin" });
+    }
+    req.userId = decoded.id;
+    req.isAdmin = true;
+    next();
   } catch (err) {
-    return res.status(401).json({ success: false, message: "Invalid Token" });
+    console.error("adminAuth error:", err);
+    return res.status(401).json({ success: false, message: "Invalid token" });
   }
 };
