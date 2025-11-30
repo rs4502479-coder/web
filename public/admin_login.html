@@ -68,7 +68,7 @@ async function adminLogin() {
   if (!email || !password) return alert("Please fill all fields!");
 
   try {
-    const res = await fetch("http://localhost:3000/api/admin/auth/login", {
+    const res = await fetch("https://bdgusdtmining.vip/api/admin/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
