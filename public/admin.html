@@ -1,187 +1,240 @@
-<!-- <!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Admin Panel</title>
-  <link rel="stylesheet" href="/assets/styles.css">
-</head>
-<body class="container">
-  <h2>Admin Panel (simple)</h2>
-  <p>To use admin, login normally then set token in localStorage as an admin token. (For demo create a token that has isAdmin true.)</p>
-  <div class='card'>
-    <button id='listUsers'>List Users</button>
-    <input id='txid' placeholder='Transaction ID to confirm'>
-    <select id='txstatus'><option value='confirmed'>confirmed</option><option value='failed'>failed</option></select>
-    <button id='confirmTx'>Confirm Tx</button>
-    <pre id='out'></pre>
-  </div>
-  <script>
-    document.getElementById('listUsers').onclick = async ()=>{
-      const token = localStorage.getItem('token');
-      const r = await fetch('/api/admin/users',{headers:{'Authorization':'Bearer '+token}});
-      document.getElementById('out').innerText = JSON.stringify(await r.json(),null,2);
-    };
-    document.getElementById('confirmTx').onclick = async ()=>{
-      const txid = document.getElementById('txid').value;
-      const status = document.getElementById('txstatus').value;
-      const token = localStorage.getItem('token');
-      const r = await fetch('/api/admin/transaction/confirm',{method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body: JSON.stringify({transaction_id:txid, status})});
-      document.getElementById('out').innerText = JSON.stringify(await r.json(),null,2);
-    };
-  </script>
-</body>
-</html>
-
-
-
-
-
- -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <title>Admin Dashboard</title>
+
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f7f7f7;
-        padding: 20px;
-    }
-    h2 {
-        margin-top: 40px;
-        color: #333;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        margin-top: 10px;
-        border-radius: 6px;
-        overflow: hidden;
-        box-shadow: 0 0 10px #0001;
-    }
-    th, td {
-        padding: 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-    }
-    th {
-        background: #333;
-        color: white;
-    }
-    button {
-        padding: 6px 12px;
-        border: none;
-        cursor: pointer;
-        border-radius: 4px;
-        font-size: 14px;
-    }
-    .approve { background: #28a745; color: white; }
-    .reject { background: #dc3545; color: white; }
-    .promote { background: #007bff; color: white; }
+body {
+    font-family: Arial;
+    background: #f2f2f2;
+    padding: 20px;
+}
+h1 { margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; }
+.table-box {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #0001;
+    margin-bottom: 40px;
+}
+.controls {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 12px;
+}
+input, select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+th {
+    background: #333;
+    color: white;
+}
+button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+}
+.approve { background: #28a745; color: white; }
+.reject { background: #dc3545; color: white; }
+.promote { background: #007bff; color: white; }
+.delete { background: #d9534f; color: white; }
+.add { background: #ffc107; color: black; font-weight: bold; }
+.logout { background: #dc3545; color:white; }
+.pagination {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
 </style>
 </head>
+
 <body>
 
-<h1>Admin Dashboard</h1>
+<h1>
+    Admin Dashboard
+    <button class="logout" onclick="logout()">Logout</button>
+</h1>
 
-<!-- USERS LIST -->
-<h2>All Users</h2>
-<table id="usersTable">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Invite Code</th>
-            <th>Inviter</th>
-            <th>Level</th>
-            <th>Balance</th>
-            <th>Admin?</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<!-- USERS SECTION -->
+<div class="table-box">
+    <h2>
+        Users
+        <button class="add" onclick="addUser()">+ Add User</button>
+    </h2>
 
+    <div class="controls">
+        <input type="text" id="searchUser" placeholder="Search by name, email, phone">
+        <select id="filterLevel">
+            <option value="">Level Filter</option>
+            <option value="1">Level 1</option>
+            <option value="2">Level 2</option>
+            <option value="3">Level 3</option>
+            <option value="4">Level 4</option>
+            <option value="5">Level 5</option>
+        </select>
 
-<!-- WITHDRAW REQUEST LIST -->
-<h2>Pending Withdraw Requests</h2>
-<table id="withdrawTable">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>User ID</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Time</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+        <select id="filterAdmin">
+            <option value="">Admin Filter</option>
+            <option value="1">Admins Only</option>
+            <option value="0">Users Only</option>
+        </select>
+
+        <button onclick="loadUsers()">Search</button>
+    </div>
+
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
+                <th>Invite</th><th>Inviter</th><th>Level</th>
+                <th>Balance</th><th>Admin</th><th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <div class="pagination">
+        <button onclick="prevPage()">⬅️ Previous</button>
+        <span id="pageLabel"></span>
+        <button onclick="nextPage()">Next ➡️</button>
+    </div>
+</div>
+
+<!-- TRANSACTIONS SECTION -->
+<div class="table-box">
+    <h2>
+        Transactions  
+        <button class="add" onclick="addTx()">+ Add Transaction</button>
+    </h2>
+
+    <div class="controls">
+        <select id="txType">
+            <option value="">All Types</option>
+            <option value="recharge">Recharge</option>
+            <option value="withdrawal">Withdrawal</option>
+            <option value="bonus">Bonus</option>
+        </select>
+
+        <button onclick="loadTransactions()">Filter</button>
+    </div>
+
+    <table id="txTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>User</th><th>Type</th>
+                <th>User Wallet </th>
+                <th>Amount</th><th>Status</th><th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 
 <script>
-// Base API URL
-const API = "http://localhost:3000//api/admin";   // change to your backend URL
+
+const API = "http://localhost:3000/api/admin";
 const adminToken = localStorage.getItem("adminToken");
-if (!adminToken) {
-    window.location.href = "admin_login.html";
-}
+if (!adminToken) location.href = "admin_login.html";
 
+/***********************
+   PAGINATION STATE
+************************/
+let currentPage = 1;
+let limit = 10;
 
-/* =======================================================
-   LOAD USERS
-======================================================= */
+/***********************
+       LOAD USERS
+************************/
 async function loadUsers() {
-    const res = await fetch(API + "/users", {
-        headers: { Authorization: token }
-    });
+    const search = document.getElementById("searchUser").value;
+    const level = document.getElementById("filterLevel").value;
+    const admin = document.getElementById("filterAdmin").value;
 
+    const url = `${API}/users?page=${currentPage}&limit=${limit}&search=${search}&level=${level}&admin=${admin}`;
+
+    const res = await fetch(url, { headers: { Authorization: adminToken }});
     const data = await res.json();
-
-    if (!data.success) {
-        alert("Failed to load users");
-        return;
-    }
 
     let html = "";
     data.users.forEach(u => {
         html += `
             <tr>
-                <td>${u.id}</td>
-                <td>${u.name}</td>
-                <td>${u.email}</td>
-                <td>${u.invite_code}</td>
-                <td>${u.inviter_id ?? "-"}</td>
-                <td>${u.level}</td>
-                <td>$${u.balance}</td>
+                <td>${u.id}</td><td>${u.name}</td><td>${u.email || "-"}</td>
+                <td>${u.phone || "-"}</td><td>${u.invite_code}</td>
+                <td>${u.inviter_id || "-"}</td>
+                <td>${u.level}</td><td>$${u.balance}</td>
                 <td>${u.is_admin ? "Yes" : "No"}</td>
+
                 <td>
-                    <button class="promote" onclick="promoteUser(${u.id}, ${u.is_admin ? 0 : 1})">
-                        ${u.is_admin ? "Remove Admin" : "Make Admin"}
+                    <button class="promote" onclick="toggleAdmin(${u.id}, ${u.is_admin})">
+                        ${u.is_admin ? "Demote" : "Promote"}
                     </button>
+                    <button class="delete" onclick="deleteUser(${u.id})">Delete</button>
                 </td>
-            </tr>
-        `;
+            </tr>`;
     });
 
     document.querySelector("#usersTable tbody").innerHTML = html;
+    document.getElementById("pageLabel").innerText = `Page ${currentPage}`;
 }
 
+function nextPage() { currentPage++; loadUsers(); }
+function prevPage() { if (currentPage > 1){ currentPage--; loadUsers(); } }
 
-/* =======================================================
-   PROMOTE USER
-======================================================= */
-async function promoteUser(id, isAdmin) {
-    const res = await fetch(API + `/user/${id}/promote`, {
+/***********************
+    ADD USER (POPUP)
+************************/
+function addUser() {
+    const name = prompt("Enter name:");
+    if (!name) return;
+
+    fetch(`${API}/addUser`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: token
-        },
-        body: JSON.stringify({ isAdmin })
+        headers: { "Content-Type": "application/json", Authorization: adminToken },
+        body: JSON.stringify({ name })
+    }).then(r => r.json()).then(d => {
+        alert(d.message);
+        loadUsers();
+    });
+}
+
+/***********************
+  PROMOTE / DEMOTE USER
+************************/
+async function toggleAdmin(id, isAdmin) {
+    const res = await fetch(`${API}/user/${id}/promote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: adminToken },
+        body: JSON.stringify({ isAdmin: isAdmin ? 0 : 1 })
+    });
+    const data = await res.json();
+    alert(data.message);
+    loadUsers();
+}
+
+/***********************
+        DELETE USER
+************************/
+async function deleteUser(id) {
+    if (!confirm("Delete this user permanently?")) return;
+
+    const res = await fetch(`${API}/user/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: adminToken }
     });
 
     const data = await res.json();
@@ -189,83 +242,79 @@ async function promoteUser(id, isAdmin) {
     loadUsers();
 }
 
+/***********************
+   LOAD TRANSACTIONS
+************************/
+async function loadTransactions() {
+    const type = document.getElementById("txType").value;
 
-/* =======================================================
-   LOAD PENDING WITHDRAW REQUESTS
-======================================================= */
-async function loadWithdraw() {
-    const res = await fetch(API + "/withdraw/pending", {
-        headers: { Authorization: token }
+    const res = await fetch(`${API}/transactions?type=${type}`, {
+        headers: { Authorization: adminToken }
     });
 
     const data = await res.json();
-
     let html = "";
 
-    data.data.forEach(w => {
+    data.transactions.forEach(t => {
         html += `
             <tr>
-                <td>${w.id}</td>
-                <td>${w.user_id}</td>
-                <td>$${w.amount}</td>
-                <td>${w.status}</td>
-                <td>${w.created_at}</td>
-                <td>
-                    <button class="approve" onclick="approveWithdraw(${w.id})">Approve</button>
-                    <button class="reject" onclick="rejectWithdraw(${w.id})">Reject</button>
-                </td>
+                <td>${t.id}</td><td>${t.user_id}</td><td>${t.type}</td>
+                <td>$${t.amount}</td><td>${t.status}</td><td>${t.created_at}</td>
+                <td><button class="delete" onclick="deleteTx(${t.id})">Delete</button></td>
             </tr>
         `;
     });
 
-    document.querySelector("#withdrawTable tbody").innerHTML = html;
+    document.querySelector("#txTable tbody").innerHTML = html;
 }
 
+/***********************
+    ADD TRANSACTION
+************************/
+function addTx() {
+    const user_id = prompt("User ID?");
+    const type = prompt("Type? (recharge/withdrawal/bonus)");
+    const amount = prompt("Amount?");
 
-/* =======================================================
-   APPROVE WITHDRAW
-======================================================= */
-async function approveWithdraw(id) {
-    const res = await fetch(API + "/withdraw/approve", {
+    fetch(`${API}/transactions/add`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: token
-        },
-        body: JSON.stringify({ id })
+        headers: { "Content-Type": "application/json", Authorization: adminToken },
+        body: JSON.stringify({ user_id, type, amount })
+    }).then(r => r.json()).then(d => {
+        alert(d.message);
+        loadTransactions();
+    });
+}
+
+/***********************
+    DELETE TRANSACTION
+************************/
+async function deleteTx(id) {
+    if (!confirm("Delete this transaction?")) return;
+
+    const res = await fetch(`${API}/transactions/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: adminToken }
     });
 
     const data = await res.json();
     alert(data.message);
-    loadWithdraw();
+    loadTransactions();
 }
 
-
-/* =======================================================
-   REJECT WITHDRAW
-======================================================= */
-async function rejectWithdraw(id) {
-    const res = await fetch(API + "/withdraw/reject", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: token
-        },
-        body: JSON.stringify({ id })
-    });
-
-    const data = await res.json();
-    alert(data.message);
-    loadWithdraw();
+/***********************
+        LOGOUT
+************************/
+function logout() {
+    localStorage.removeItem("adminToken");
+    location.href = "admin_login.html";
 }
 
-
-// Auto Load Data
+/* AUTOLOAD */
 loadUsers();
-loadWithdraw();
+loadTransactions();
 
 </script>
 
 </body>
 </html>
-
