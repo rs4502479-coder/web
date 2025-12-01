@@ -686,4 +686,28 @@ router.post("/tasks/claim", auth, async (req, res) => {
   }
 });
 
+
+// GET /api/user/team-members?level=1
+router.get("/team-members", auth, async (req, res) => {
+  try {
+    const level = req.query.level;
+    const userId = req.userId;
+
+    const members = await db.query(
+      "SELECT id, name, email, phone, level, created_at FROM users WHERE inviter_id = ? AND level = ?",
+      [userId, level]
+    );
+
+    return res.json({
+      success: true,
+      members: members[0]
+    });
+  } catch (err) {
+    console.log(err);
+    return res.json({ success: false, message: "Server Error" });
+  }
+});
+
+
 module.exports = router;
+
