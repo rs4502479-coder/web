@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Company Certifications</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Inter", sans-serif;
+            background: linear-gradient(#6514df 10%, #7904da 60%);
+            color: #222;
+            padding-bottom: 60px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #f9f7fa 0%, #395296 100%);
+            padding: 35px 20px;
+            text-align: center;
+            color: linear-gradient(135deg, #6514df 10%, #0c0a0e 60%);
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0px 4px 10px rgba(98, 22, 221, 0.3);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            padding: 30px 20px;
+        }
+
+        /* Description */
+        .description {
+            font-size: 18px;
+            line-height: 1.75;
+            margin-bottom: 35px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(6px);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Certificates Layout */
+        .cert-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 35px;
+            margin-top: 30px;
+        }
+
+        .cert-box {
+            width: 400px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .cert-box:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .cert-box img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .cert-title {
+            margin-top: 14px;
+            font-size: 17px;
+            font-weight: 700;
+            color: #6216dd;
+            letter-spacing: 0.5px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-block;
+            margin-top: 35px;
+            text-decoration: none;
+            background: linear-gradient(135deg, #6216dd, #7d4bff);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0px 4px 10px rgba(98, 22, 221, 0.3);
+            transition: 0.25s;
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(135deg, #5821cc, #6b38ff);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">Company Certifications</div>
+
+    <div class="container">
+
+        <p class="description">
+            All transactions are protected by Colorado’s Uniform Commercial Code (UCC)
+            and Digital Asset Regulatory Act, ensuring legal security, trust, and
+            transparent dispute resolution.
+        </p>
+
+        <!-- Certificates Section -->
+        <div class="cert-wrapper">
+
+            <div class="cert-box">
+                <img src="/assets/images/cert_document_filed.png" alt="Certificate of Document Filed">
+                <div class="cert-title">CERTIFICATE OF DOCUMENT FILED</div>
+            </div>
+
+            <div class="cert-box">
+                <img src="/assets/images/cert_good_standing.png" alt="Certificate of Good Standing">
+                <div class="cert-title">CERTIFICATE OF FACT OF GOOD STANDING</div>
+            </div>
+
+        </div>
+
+        <div style="text-align:center;">
+            <a href="/index.html" class="back-btn">← Back to Home</a>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
