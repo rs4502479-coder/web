@@ -60,7 +60,7 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
-const db = require("../db");
+const db = require("../config/db");
 
 // USER MAKES A WITHDRAW REQUEST
 router.post("/request", auth, async (req, res) => {
