@@ -59,13 +59,15 @@
 // // withdraw.js
 const express = require("express");
 const router = express.Router();
-const auth = require("../middleware/auth");
+const { auth } = require("../middleware/auth");
 const db = require("../config/db");
 
-// USER MAKES A WITHDRAW REQUEST
+// ===============================
+// USER CREATES WITHDRAW REQUEST
+// ===============================
 router.post("/request", auth, async (req, res) => {
   try {
-    const user_id = req.user.id;
+    const user_id = req.userId; // ✅ FIXED
     const { amount, wallet } = req.body;
 
     if (!amount || !wallet)
@@ -78,28 +80,43 @@ router.post("/request", auth, async (req, res) => {
       });
 
     const [rows] = await db.query(
-      "SELECT balance FROM users WHERE id=?",
+      "SELECT balance FROM users WHERE id = ?",
       [user_id]
     );
 
-    if (!rows.length || rows[0].balance < amount) {
-      return res.json({ success: false, message: "Insufficient balance" });
-    }
+    if (!rows.length)
+      return res.json({ success: false, message: "User not found" });
 
+    if (rows[0].balance < amount)
+      return res.json({
+        success: false,
+        message: "Insufficient balance",
+      });
+
+    // Deduct balance
     await db.query(
-      "UPDATE users SET balance = balance - ? WHERE id=?",
+      "UPDATE users SET balance = balance - ? WHERE id = ?",
       [amount, user_id]
     );
 
+    // Save transaction
     await db.query(
       `INSERT INTO transactions (transaction_id, user_id, type, amount, status, metadata)
-       VALUES (UUID(), ?, 'withdrawal', ?, 'pending', ?)`,
-      [user_id, amount, wallet]
+       VALUES (?, ?, 'withdrawal', ?, 'pending', ?)`,
+      [
+        "TX-" + Date.now(),
+        user_id,
+        amount,
+        JSON.stringify({ wallet }),
+      ]
     );
 
-    return res.json({ success: true, message: "Withdrawal request submitted" });
+    return res.json({
+      success: true,
+      message: "Withdrawal request submitted",
+    });
   } catch (err) {
-    console.log(err);
+    console.error("WITHDRAW ERROR:", err);
     return res.json({ success: false, message: "Server error" });
   }
 });
