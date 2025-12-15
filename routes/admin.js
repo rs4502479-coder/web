@@ -471,4 +471,53 @@ router.get("/logout", adminAuth, (req, res) => {
   res.json({ success: true, message: "Logged out successfully" });
 });
 
+
+
+
+/* =====================================================
+   GET ALL TRANSACTIONS (ADMIN PANEL)
+===================================================== */
+router.get("/transactions", adminAuth, async (req, res) => {
+  try {
+    const { type = "" } = req.query;
+
+    let sql = `
+      SELECT 
+        t.id,
+        t.transaction_id,
+        t.user_id,
+        u.email,
+        t.type,
+        t.amount,
+        t.status,
+        t.created_at
+      FROM transactions t
+      LEFT JOIN users u ON u.id = t.user_id
+    `;
+
+    let params = [];
+
+    if (type) {
+      sql += " WHERE t.type = ? ";
+      params.push(type);
+    }
+
+    sql += " ORDER BY t.id DESC LIMIT 200";
+
+    const [rows] = await db.query(sql, params);
+
+    res.json({
+      success: true,
+      transactions: rows
+    });
+  } catch (err) {
+    console.error("ADMIN TRANSACTIONS ERROR:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+
+
+
 module.exports = router;
+
