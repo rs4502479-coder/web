@@ -225,14 +225,46 @@
       alert("Address copied!");
     }
 
-    function submitRecharge() {
-      const txid = document.getElementById("txid").value.trim();
-      if (!txid) {
-        alert("Please enter your Transaction ID.");
-        return;
-      }
-      alert("Transaction ID submitted successfully!");
+    // function submitRecharge() {
+    //   const txid = document.getElementById("txid").value.trim();
+    //   if (!txid) {
+    //     alert("Please enter your Transaction ID.");
+    //     return;
+    //   }
+    //   alert("Transaction ID submitted successfully!");
+    // }
+
+
+  function submitRecharge() {
+    const txid = document.getElementById("txid").value.trim();
+    const token = document.getElementById("selectedToken").innerText;
+
+    if (!txid) {
+      alert("Please enter your Transaction ID.");
+      return;
     }
-  </script>
+
+    fetch("/api/user/recharge", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + localStorage.getItem("token")
+      },
+      body: JSON.stringify({ txid, token })
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        if (data.success) {
+          document.getElementById("txid").value = "";
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Server error");
+      });
+  }
+</script>
 </body>
 </html>
+
