@@ -132,16 +132,21 @@ button {
     </div>
 
     <table id="txTable">
-        <thead>
-            <tr>
-                <th>ID</th><th>User</th><th>Type</th>
-                <th>User Wallet </th>
-                <th>Amount</th><th>Status</th><th>Date</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>User</th>
+      <th>Type</th>
+      <th>TxID</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Date</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
 </div>
 
 <script>
@@ -245,28 +250,72 @@ async function deleteUser(id) {
 /***********************
    LOAD TRANSACTIONS
 ************************/
+
 async function loadTransactions() {
-    const type = document.getElementById("txType").value;
+  const type = document.getElementById("txType").value;
 
-    const res = await fetch(`${API}/transactions?type=${type}`, {
-        headers: { Authorization: adminToken }
-    });
+  const res = await fetch(`${API}/transactions?type=${type}`, {
+    headers: { Authorization: adminToken }
+  });
 
-    const data = await res.json();
-    let html = "";
+  const data = await res.json();
+  let html = "";
 
-    data.transactions.forEach(t => {
-        html += `
-            <tr>
-                <td>${t.id}</td><td>${t.user_id}</td><td>${t.type}</td>
-                <td>$${t.amount}</td><td>${t.status}</td><td>${t.created_at}</td>
-                <td><button class="delete" onclick="deleteTx(${t.id})">Delete</button></td>
-            </tr>
-        `;
-    });
+  data.transactions.forEach(t => {
+    let actions = "";
 
-    document.querySelector("#txTable tbody").innerHTML = html;
+    if (t.status === "pending") {
+      actions = `
+        <button class="approve" onclick="updateTx('${t.transaction_id}', 'confirmed')">Approve</button>
+        <button class="reject" onclick="updateTx('${t.transaction_id}', 'failed')">Reject</button>
+      `;
+    } else {
+      actions = `<span>${t.status}</span>`;
+    }
+
+    html += `
+      <tr>
+        <td>${t.id}</td>
+        <td>${t.user_id}<br><small>${t.email || ""}</small></td>
+        <td>${t.type}</td>
+        <td style="max-width:160px;word-break:break-all;">${t.txid || "-"}</td>
+        <td>$${t.amount}</td>
+        <td>${t.status}</td>
+        <td>${new Date(t.created_at).toLocaleString()}</td>
+        <td>${actions}</td>
+      </tr>
+    `;
+  });
+
+  document.querySelector("#txTable tbody").innerHTML = html;
 }
+
+
+
+
+    
+// async function loadTransactions() {
+//     const type = document.getElementById("txType").value;
+
+//     const res = await fetch(`${API}/transactions?type=${type}`, {
+//         headers: { Authorization: adminToken }
+//     });
+
+//     const data = await res.json();
+//     let html = "";
+
+//     data.transactions.forEach(t => {
+//         html += `
+//             <tr>
+//                 <td>${t.id}</td><td>${t.user_id}</td><td>${t.type}</td>
+//                 <td>$${t.amount}</td><td>${t.status}</td><td>${t.created_at}</td>
+//                 <td><button class="delete" onclick="deleteTx(${t.id})">Delete</button></td>
+//             </tr>
+//         `;
+//     });
+
+//     document.querySelector("#txTable tbody").innerHTML = html;
+// }
 
 /***********************
     ADD TRANSACTION
@@ -314,8 +363,29 @@ function logout() {
 loadUsers();
 loadTransactions();
 
+
+
+
+    async function updateTx(transaction_id, status) {
+  if (!confirm(`Are you sure to ${status} this transaction?`)) return;
+
+  const res = await fetch(`${API}/transaction/confirm`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: adminToken
+    },
+    body: JSON.stringify({ transaction_id, status })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+  loadTransactions();
+}
+
 </script>
 
 </body>
 </html>
+
 
