@@ -5,6 +5,78 @@ const { auth } = require("../middleware/auth");
 const router = express.Router();
 
 
+
+
+
+const { v4: uuidv4 } = require("uuid");
+
+/**
+ * POST /api/user/recharge
+ * body: { txid, token }
+ */
+router.post("/recharge", auth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { txid, token } = req.body;
+
+    if (!txid || !token) {
+      return res.status(400).json({
+        success: false,
+        message: "TxID and token required",
+      });
+    }
+
+    // 🔒 Duplicate txid protection
+    const [exists] = await db.query(
+      "SELECT id FROM transactions WHERE txid = ?",
+      [txid]
+    );
+
+    if (exists.length) {
+      return res.json({
+        success: false,
+        message: "This TxID is already submitted",
+      });
+    }
+
+    // Wallet snapshot
+    const [[user]] = await db.query(
+      "SELECT balance FROM users WHERE id = ?",
+      [userId]
+    );
+
+    // Save pending recharge
+    await db.query(
+      `INSERT INTO transactions 
+      (transaction_id, user_id, type, token, txid, amount, user_wallet, status, metadata)
+      VALUES (?,?,?,?,?,?,?,?,?)`,
+      [
+        "TX-" + uuidv4(),
+        userId,
+        "recharge",
+        token,
+        txid,
+        0, // admin later confirms amount
+        user.balance,
+        "pending",
+        JSON.stringify({ source: "user_recharge_request" }),
+      ]
+    );
+
+    return res.json({
+      success: true,
+      message: "Recharge submitted. Waiting for admin confirmation.",
+    });
+  } catch (err) {
+    console.error("RECHARGE ERROR:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+
 /**
  * GET /api/user/profile
  * Returns basic user info
@@ -710,4 +782,5 @@ router.get("/team-members", auth, async (req, res) => {
 
 
 module.exports = router;
+
 
