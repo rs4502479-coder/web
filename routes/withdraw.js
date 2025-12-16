@@ -140,7 +140,6 @@
 
 const express = require("express");
 const db = require("../config/db");
-// const userAuth = require("../middleware/userAuth");
 const auth = require("../middleware/auth");
 const { v4: uuidv4 } = require("uuid");
 
@@ -164,30 +163,29 @@ router.post("/request", auth, async (req, res) => {
       });
 
     const [[user]] = await db.query(
-      "SELECT balance FROM users WHERE id=?",
+      "SELECT balance FROM users WHERE id = ?",
       [userId]
     );
 
-    if (!user || user.balance < amount)
+    if (!user || Number(user.balance) < Number(amount))
       return res.json({
         success: false,
         message: "Insufficient balance",
       });
 
-    // 🔒 HOLD BALANCE (NOT DEDUCT YET)
+    // 🔒 Create pending withdrawal (balance not deducted yet)
     await db.query(
       `
       INSERT INTO transactions
-      (transaction_id, user_id, type, amount, wallet_address, wallet_before, status)
-      VALUES (?,?,?,?,?,?, 'pending')
+      (transaction_id, user_id, type, amount, user_wallet, status, metadata)
+      VALUES (?, ?, 'withdrawal', ?, ?, 'pending', ?)
       `,
       [
         "WD-" + uuidv4(),
         userId,
-        "withdrawal",
         amount,
-        wallet,
         user.balance,
+        JSON.stringify({ wallet }),
       ]
     );
 
@@ -202,6 +200,7 @@ router.post("/request", auth, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 
