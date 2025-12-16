@@ -140,7 +140,8 @@
 
 const express = require("express");
 const db = require("../config/db");
-const userAuth = require("../middleware/userAuth");
+// const userAuth = require("../middleware/userAuth");
+const auth = require("../middleware/auth");
 const { v4: uuidv4 } = require("uuid");
 
 const router = express.Router();
@@ -201,3 +202,4 @@ router.post("/request", userAuth, async (req, res) => {
 });
 
 module.exports = router;
+
