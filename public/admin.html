@@ -135,6 +135,7 @@ button {
   <thead>
     <tr>
       <th>ID</th>
+      <th>User_ID</th>  
       <th>User</th>
       <th>Type</th>
       <th>TxID</th>
@@ -178,7 +179,7 @@ async function loadUsers() {
     data.users.forEach(u => {
         html += `
             <tr>
-                <td>${u.id}</td><td>${u.name}</td><td>${u.email || "-"}</td>
+                <td>${u.id}</td><td>${u.user_id}</td><td>${u.name}</td><td>${u.email || "-"}</td>
                 <td>${u.phone || "-"}</td><td>${u.invite_code}</td>
                 <td>${u.inviter_id || "-"}</td>
                 <td>${u.level}</td><td>$${u.balance}</td>
@@ -387,5 +388,6 @@ loadTransactions();
 
 </body>
 </html>
+
 
 
