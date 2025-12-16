@@ -140,7 +140,7 @@
 
 const express = require("express");
 const db = require("../config/db");
-const auth = require("../middleware/auth");
+const {auth} = require("../middleware/auth");
 const { v4: uuidv4 } = require("uuid");
 
 const router = express.Router();
@@ -200,6 +200,7 @@ router.post("/request", auth, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 
