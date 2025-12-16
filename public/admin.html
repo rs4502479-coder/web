@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -69,7 +69,7 @@ button {
 </h1>
 
 <!-- USERS SECTION -->
-<div class="table-box">
+<!-- <div class="table-box">
     <h2>
         Users
         <button class="add" onclick="addUser()">+ Add User</button>
@@ -114,7 +114,7 @@ button {
 </div>
 
 <!-- TRANSACTIONS SECTION -->
-<div class="table-box">
+<!-- <div class="table-box">
     <h2>
         Transactions  
         <button class="add" onclick="addTx()">+ Add Transaction</button>
@@ -133,18 +133,18 @@ button {
 
     <table id="txTable">
   <thead>
-    <tr>
-      <th>ID</th>
-      <th>User_ID</th>  
-      <th>User</th>
-      <th>Type</th>
-      <th>TxID</th>
-      <th>Amount</th>
-      <th>Status</th>
-      <th>Date</th>
-      <th>Action</th>
-    </tr>
-  </thead>
+  <tr>
+    <th>ID</th>
+    <th>User</th>
+    <th>Type</th>
+    <th>TxID / Wallet</th>
+    <th>Amount</th>
+    <th>Status</th>
+    <th>Date</th>
+    <th>Action</th>
+  </tr>
+</thead>
+
   <tbody></tbody>
 </table>
 
@@ -154,9 +154,9 @@ button {
 
 const API = "https://bdgusdtmining.vip/api/admin";
 const adminToken = localStorage.getItem("adminToken");
-if (!adminToken) location.href = "admin_login.html";
+if (!adminToken) location.href = "admin_login.html"; -->
 
-/***********************
+<!-- /***********************
    PAGINATION STATE
 ************************/
 let currentPage = 1;
@@ -192,9 +192,9 @@ async function loadUsers() {
                     <button class="delete" onclick="deleteUser(${u.id})">Delete</button>
                 </td>
             </tr>`;
-    });
+    }); -->
 
-    document.querySelector("#usersTable tbody").innerHTML = html;
+    <!-- document.querySelector("#usersTable tbody").innerHTML = html;
     document.getElementById("pageLabel").innerText = `Page ${currentPage}`;
 }
 
@@ -246,9 +246,9 @@ async function deleteUser(id) {
     const data = await res.json();
     alert(data.message);
     loadUsers();
-}
+} -->
 
-/***********************
+<!-- /***********************
    LOAD TRANSACTIONS
 ************************/
 
@@ -390,4 +390,286 @@ loadTransactions();
 </html>
 
 
+ --> 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Admin Dashboard</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f2f2f2;
+    padding: 20px;
+}
+h1 {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.table-box {
+    background:#fff;
+    padding:15px;
+    border-radius:8px;
+    box-shadow:0 0 10px #0001;
+    margin-bottom:40px;
+}
+.controls {
+    display:flex;
+    gap:12px;
+    margin-bottom:15px;
+}
+input, select {
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+table {
+    width:100%;
+    border-collapse:collapse;
+}
+th, td {
+    padding:10px;
+    border:1px solid #ddd;
+}
+th {
+    background:#333;
+    color:#fff;
+}
+button {
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    border:none;
+}
+.add { background:#28a745; color:#fff; }
+.reject { background:#dc3545; color:#fff; }
+.approve { background:#007bff; color:#fff; }
+.logout { background:#dc3545; color:#fff; }
+.pagination {
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+small { color:#555; }
+</style>
+</head>
+
+<body>
+
+<h1>
+  Admin Dashboard
+  <button class="logout" onclick="logout()">Logout</button>
+</h1>
+
+<!-- USERS -->
+<div class="table-box">
+<h2>Users</h2>
+
+<div class="controls">
+  <input id="searchUser" placeholder="Search name / email / phone">
+  <button onclick="loadUsers()">Search</button>
+</div>
+
+<table id="usersTable">
+<thead>
+<tr>
+  <th>ID</th>
+  <th>User</th>
+  <th>Balance</th>
+  <th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<div class="pagination">
+  <button onclick="prevPage()">⬅ Prev</button>
+  <span id="pageLabel"></span>
+  <button onclick="nextPage()">Next ➡</button>
+</div>
+</div>
+
+<!-- TRANSACTIONS -->
+<div class="table-box">
+<h2>Transactions</h2>
+
+<div class="controls">
+<select id="txType">
+  <option value="">All</option>
+  <option value="recharge">Recharge</option>
+  <option value="withdrawal">Withdrawal</option>
+</select>
+<button onclick="loadTransactions()">Filter</button>
+</div>
+
+<table id="txTable">
+<thead>
+<tr>
+  <th>ID</th>
+  <th>User</th>
+  <th>Type</th>
+  <th>TxID / Wallet</th>
+  <th>Amount</th>
+  <th>Status</th>
+  <th>Date</th>
+  <th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<script>
+const API = "https://bdgusdtmining.vip/api/admin";
+const adminToken = localStorage.getItem("adminToken");
+if (!adminToken) location.href = "admin_login.html";
+
+let page = 1, limit = 10;
+
+/* USERS */
+async function loadUsers() {
+  const search = document.getElementById("searchUser").value;
+  const res = await fetch(`${API}/users?page=${page}&limit=${limit}&search=${search}`, {
+    headers:{Authorization:adminToken}
+  });
+  const data = await res.json();
+  let html = "";
+
+  data.users.forEach(u=>{
+    html += `
+    <tr>
+      <td>${u.id}</td>
+      <td>
+        ${u.name}<br>
+        <small>${u.email||"-"}</small><br>
+        <small>${u.phone||"-"}</small>
+      </td>
+      <td>$${u.balance}</td>
+      <td>
+        <button class="add" onclick="changeBalance(${u.id},'add')">+ Add</button>
+        <button class="reject" onclick="changeBalance(${u.id},'deduct')">- Deduct</button>
+      </td>
+    </tr>`;
+  });
+
+  document.querySelector("#usersTable tbody").innerHTML = html;
+  document.getElementById("pageLabel").innerText = `Page ${page}`;
+}
+
+function nextPage(){page++;loadUsers()}
+function prevPage(){if(page>1){page--;loadUsers()}}
+
+/* BALANCE */
+async function changeBalance(id, action){
+  const amount = prompt(`Enter amount to ${action}`);
+  if(!amount || isNaN(amount)) return alert("Invalid amount");
+
+  const res = await fetch(`${API}/user/balance`,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:adminToken
+    },
+    body:JSON.stringify({user_id:id,action,amount})
+  });
+
+  const data = await res.json();
+  alert(data.message);
+  loadUsers();
+}
+
+/* TRANSACTIONS */
+async function loadTransactions(){
+  const type = document.getElementById("txType").value;
+  const res = await fetch(`${API}/transactions?type=${type}`,{
+    headers:{Authorization:adminToken}
+  });
+  const data = await res.json();
+  let html = "";
+
+  data.transactions.forEach(t=>{
+    let info = "-";
+    if(t.type==="recharge") info = t.txid || "-";
+    if(t.type==="withdrawal") info = t.wallet_address || "-";
+
+    let action = t.status==="pending"
+      ? `<button class="approve" onclick="updateTx('${t.transaction_id}','confirmed')">Approve</button>
+         <button class="reject" onclick="updateTx('${t.transaction_id}','failed')">Reject</button>`
+      : `<b>${t.status}</b>`;
+
+    html += `
+    <tr>
+      <td>${t.id}</td>
+      <td>
+        ${t.user_id}<br>
+        <small>${t.email||""}</small><br>
+        <small>${t.phone||""}</small>
+      </td>
+      <td>${t.type}</td>
+      <td style="word-break:break-all">${info}</td>
+      <td>$${t.amount}</td>
+      <td>${t.status}</td>
+      <td>${new Date(t.created_at).toLocaleString()}</td>
+      <td>${action}</td>
+    </tr>`;
+  });
+
+  document.querySelector("#txTable tbody").innerHTML = html;
+}
+
+/* TX CONFIRM */
+async function updateTx(transaction_id,status){
+  if(!confirm(`Confirm ${status}?`)) return;
+
+  const res = await fetch(`${API}/transaction/confirm`,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:adminToken
+    },
+    body:JSON.stringify({transaction_id,status})
+  });
+  const data = await res.json();
+  alert(data.message);
+  loadTransactions();
+}
+
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem("adminToken");
+  location.href="admin_login.html";
+}
+
+loadUsers();
+loadTransactions();
+</script>
+
+</body>
+</html>
