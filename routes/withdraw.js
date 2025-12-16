@@ -141,7 +141,7 @@
 const express = require("express");
 const db = require("../config/db");
 // const userAuth = require("../middleware/userAuth");
-const userAuth = require("../middleware/auth");
+const auth = require("../middleware/auth");
 const { v4: uuidv4 } = require("uuid");
 
 const router = express.Router();
@@ -149,7 +149,7 @@ const router = express.Router();
 /* =====================================================
    USER WITHDRAW REQUEST
 ===================================================== */
-router.post("/request", userAuth, async (req, res) => {
+router.post("/request", auth, async (req, res) => {
   try {
     const userId = req.user.id;
     const { amount, wallet } = req.body;
@@ -202,5 +202,6 @@ router.post("/request", userAuth, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
