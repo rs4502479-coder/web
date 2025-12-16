@@ -477,6 +477,9 @@ router.get("/logout", adminAuth, (req, res) => {
 /* =====================================================
    GET ALL TRANSACTIONS (ADMIN PANEL)
 ===================================================== */
+/* =====================================================
+   GET ALL TRANSACTIONS (ADMIN PANEL)
+===================================================== */
 router.get("/transactions", adminAuth, async (req, res) => {
   try {
     const { type = "" } = req.query;
@@ -487,10 +490,13 @@ router.get("/transactions", adminAuth, async (req, res) => {
         t.transaction_id,
         t.user_id,
         u.email,
+        u.phone,
         t.type,
         t.amount,
         t.status,
-        t.created_at
+        t.created_at,
+        t.txid,
+        t.wallet_address
       FROM transactions t
       LEFT JOIN users u ON u.id = t.user_id
     `;
@@ -516,8 +522,108 @@ router.get("/transactions", adminAuth, async (req, res) => {
   }
 });
 
+// router.get("/transactions", adminAuth, async (req, res) => {
+//   try {
+//     const { type = "" } = req.query;
+
+//     let sql = `
+//       SELECT 
+//         t.id,
+//         t.transaction_id,
+//         t.user_id,
+//         u.email,
+//         t.type,
+//         t.amount,
+//         t.status,
+//         t.created_at
+//       FROM transactions t
+//       LEFT JOIN users u ON u.id = t.user_id
+//     `;
+
+//     let params = [];
+
+//     if (type) {
+//       sql += " WHERE t.type = ? ";
+//       params.push(type);
+//     }
+
+//     sql += " ORDER BY t.id DESC LIMIT 200";
+
+//     const [rows] = await db.query(sql, params);
+
+//     res.json({
+//       success: true,
+//       transactions: rows
+//     });
+//   } catch (err) {
+//     console.error("ADMIN TRANSACTIONS ERROR:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
+
+
+/* =====================================================
+   ADMIN ADD / DEDUCT BALANCE
+===================================================== */
+router.post("/user/balance", adminAuth, async (req, res) => {
+  try {
+    const { user_id, action, amount } = req.body;
+
+    if (!user_id || !action || !amount)
+      return res.json({ success: false, message: "Missing fields" });
+
+    const amt = parseFloat(amount);
+    if (amt <= 0)
+      return res.json({ success: false, message: "Invalid amount" });
+
+    const [[user]] = await db.query(
+      "SELECT balance FROM users WHERE id=?",
+      [user_id]
+    );
+
+    if (!user)
+      return res.json({ success: false, message: "User not found" });
+
+    if (action === "add") {
+      await db.query(
+        "UPDATE users SET balance = balance + ? WHERE id=?",
+        [amt, user_id]
+      );
+    } 
+    else if (action === "deduct") {
+      if (user.balance < amt)
+        return res.json({
+          success: false,
+          message: "Insufficient balance"
+        });
+
+      await db.query(
+        "UPDATE users SET balance = balance - ? WHERE id=?",
+        [amt, user_id]
+      );
+    } 
+    else {
+      return res.json({ success: false, message: "Invalid action" });
+    }
+
+    // Optional: log admin transaction
+    await db.query(
+      `INSERT INTO transactions 
+       (transaction_id, user_id, type, amount, status)
+       VALUES (UUID(), ?, ?, ?, 'confirmed')`,
+      [user_id, action === "add" ? "admin_add" : "admin_deduct", amt]
+    );
+
+    res.json({ success: true, message: "Balance updated successfully" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 
 
 module.exports = router;
+
 
