@@ -17,9 +17,9 @@ const router = express.Router();
 router.post("/recharge", auth, async (req, res) => {
   try {
     const userId = req.userId;
-    const { txid, token } = req.body;
+    const { txid, token, amount } = req.body;
 
-    if (!txid || !token) {
+    if (!txid || !token || !amount || amount <= 0) {
       return res.status(400).json({
         success: false,
         message: "TxID and token required",
@@ -56,7 +56,7 @@ router.post("/recharge", auth, async (req, res) => {
         "recharge",
         token,
         txid,
-        0, // admin later confirms amount
+        amount, // admin later confirms amount
         user.balance,
         "pending",
         JSON.stringify({ source: "user_recharge_request" }),
