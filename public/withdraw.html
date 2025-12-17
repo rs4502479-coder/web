@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,14 +43,15 @@
       display: block;
     }
 
-    input[type="text"], input[type="number"] {
+    input[type="text"],
+    input[type="number"] {
       width: 100%;
       padding: 10px;
       margin-bottom: 15px;
       border-radius: 10px;
       border: none;
       outline: none;
-      background: rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.12);
       color: white;
       font-size: 15px;
     }
@@ -101,7 +103,7 @@
 
   </div>
 
- <nav>
+  <nav>
     <a href="/index.html" style="text-align: center; color: white; text-decoration: none;">
       <span class="iconify" data-icon="mdi:home-outline" style="font-size: 24px;"></span>
       <div style="font-size: 12px;">Home</div>
@@ -123,7 +125,8 @@
     </a>
 
     <!-- Profile Link -->
-    <a href="/dashboard.html" id="accountLink" class="account-link" style="text-align: center; color: white; text-decoration: none;">
+    <a href="/dashboard.html" id="accountLink" class="account-link"
+      style="text-align: center; color: white; text-decoration: none;">
       <span class="iconify" data-icon="mdi:account-circle-outline" style="font-size: 24px;"></span>
       <div style="font-size: 12px;">Profile</div>
     </a>
@@ -131,55 +134,55 @@
   </nav>
 
   <script>
+    async function submitWithdraw() {
+      const wallet = document.getElementById("wallet").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
 
-async function submitWithdraw() {
+      const token = localStorage.getItem("token");
 
-  const wallet = document.getElementById("wallet").value.trim();
-  const amount = parseFloat(document.getElementById("amount").value.trim());
+      if (!token) {
+        alert("Please login first");
+        return location.href = "signup.html";
+      }
 
-  const token = localStorage.getItem("token");
+      if (!wallet || !amount) {
+        alert("Please fill all fields");
+        return;
+      }
 
-  if (!token) {
-    alert("Please login first.");
-    return window.location.href = "signup.html";
-  }
+      if (amount < 2) {
+        alert("Minimum withdrawal is 2 USDT");
+        return;
+      }
 
-  if (!wallet || !amount) {
-    alert("Please fill in all fields.");
-    return;
-  }
+      const res = await fetch("/api/withdraw/request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        },
+        body: JSON.stringify({
+          amount,
+          wallet
+        })
+      });
 
-  if (amount < 2) {
-    alert("Minimum withdrawal is 2 USDT.");
-    return;
-  }
+      const data = await res.json();
 
-  const res = await fetch("/api/withdraw/request", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + token
-    },
-    body: JSON.stringify({ amount, wallet })
-  });
+      if (!data.success) {
+        alert("❌ " + data.message);
+        return;
+      }
 
-  const data = await res.json();
+      alert(`✅ Withdrawal Request Submitted
 
-  if (!data.success) {
-    alert("❌ " + data.message);
-    return;
-  }
-
-  alert(`✅ Withdrawal Request Submitted!
-  
 Amount: ${amount} USDT
 Wallet: ${wallet}
 
-Processing time: 24 HOURS`);
-}
-
+Processing Time: 24 HOURS`);
+    }
   </script>
 
 </body>
-</html>
 
+</html>
