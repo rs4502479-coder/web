@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,7 +22,7 @@
     }
 
     .token-list {
-      background: rgba(0,0,50,0.45);
+      background: rgba(0, 0, 50, 0.45);
       border-radius: 12px;
       padding: 10px;
     }
@@ -30,14 +31,14 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px dashed rgba(255,255,255,0.2);
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
       padding: 10px 0;
       cursor: pointer;
       transition: 0.25s;
     }
 
     .token-item:hover {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .token-left {
@@ -57,7 +58,7 @@
 
     .recharge-box {
       margin-top: 20px;
-      background: rgba(0,0,50,0.45);
+      background: rgba(0, 0, 50, 0.45);
       border-radius: 12px;
       padding: 16px;
       display: none;
@@ -75,7 +76,7 @@
       justify-content: center;
       align-items: center;
       gap: 6px;
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       padding: 6px;
       font-size: 12px;
@@ -167,6 +168,35 @@
         <span id="walletAddress">YourWalletHere</span>
         <button class="copy-btn" onclick="copyAddress()">Copy</button>
       </div>
+      <input type="number" id="amount" placeholder="Enter Recharge Amount (USDT)" min="1" />
+
+      <style>
+        input[type="number"] {
+          width: 100%;
+          padding: 12px;
+          margin-top: 12px;
+          border-radius: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.25);
+          outline: none;
+          font-size: 15px;
+          background: rgba(255, 255, 255, 0.12);
+          color: #fff;
+        }
+
+        input[type="number"]::placeholder {
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        input[type="number"]:focus {
+          border-color: #00bfff;
+          box-shadow: 0 0 0 2px rgba(0, 191, 255, 0.25);
+          background: rgba(255, 255, 255, 0.18);
+        }
+      </style>
+
+
+
+
       <input type="text" id="txid" placeholder="Enter Transaction ID (TxHash)" />
       <button class="submit-btn" onclick="submitRecharge()">Submit</button>
     </div>
@@ -235,36 +265,48 @@
     // }
 
 
-  function submitRecharge() {
-    const txid = document.getElementById("txid").value.trim();
-    const token = document.getElementById("selectedToken").innerText;
+    function submitRecharge() {
+      const txid = document.getElementById("txid").value.trim();
+      const amount = document.getElementById("amount").value.trim();
+      const token = document.getElementById("selectedToken").innerText;
 
-    if (!txid) {
-      alert("Please enter your Transaction ID.");
-      return;
+      if (!amount || amount <= 0) {
+        alert("Please enter a valid amount");
+        return;
+      }
+
+      if (!txid) {
+        alert("Please enter your Transaction ID.");
+        return;
+      }
+
+      fetch("/api/user/recharge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + localStorage.getItem("token")
+        },
+        body: JSON.stringify({
+          txid,
+          token,
+          amount
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message);
+          if (data.success) {
+            document.getElementById("txid").value = "";
+            document.getElementById("amount").value = "";
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Server error");
+        });
     }
 
-    fetch("/api/user/recharge", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem("token")
-      },
-      body: JSON.stringify({ txid, token })
-    })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message);
-        if (data.success) {
-          document.getElementById("txid").value = "";
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert("Server error");
-      });
-  }
-</script>
+  </script>
 </body>
-</html>
 
+</html>
